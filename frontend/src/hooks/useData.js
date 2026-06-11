@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { useApi } from '../api/client'
+import { browserTimeZone } from '../utils/timeZone'
 
 export const today = (date = new Date()) => {
   const year = date.getFullYear()
@@ -9,7 +10,7 @@ export const today = (date = new Date()) => {
   return `${year}-${month}-${day}`
 }
 
-const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+const timeZone = browserTimeZone()
 const dayQuery = (date) => new URLSearchParams({ date, tz: timeZone })
 
 export function useDay(date = today()) {

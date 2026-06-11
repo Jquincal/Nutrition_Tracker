@@ -1,5 +1,14 @@
+const timeZoneAliases = {
+  'America/Buenos_Aires': 'America/Argentina/Buenos_Aires',
+  'America/Catamarca': 'America/Argentina/Catamarca',
+  'America/Cordoba': 'America/Argentina/Cordoba',
+  'America/Jujuy': 'America/Argentina/Jujuy',
+  'America/Mendoza': 'America/Argentina/Mendoza',
+};
+
 export function getTimeZone(value) {
-  const timeZone = String(value || 'UTC');
+  const requestedTimeZone = String(value || 'UTC');
+  const timeZone = timeZoneAliases[requestedTimeZone] || requestedTimeZone;
   try {
     new Intl.DateTimeFormat('en-US', { timeZone }).format();
     return timeZone;
