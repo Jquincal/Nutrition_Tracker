@@ -3,9 +3,9 @@ import { query } from '../db/database.js';
 import { searchFood } from '../services/nutritionService.js';
 import { validate } from '../middleware/validate.js';
 import { mealSchema } from '../schemas.js';
+import { dayRangeSql, getTimeZone } from '../utils/date.js';
 
 const router = Router();
-const dayBounds = (date) => [`${date}T00:00:00`, `${date}T23:59:59.999`];
 
 router.get('/search', async (req, res) => {
   const term = String(req.query.q || '').trim();
@@ -20,7 +20,8 @@ router.get('/search', async (req, res) => {
 
 router.get('/', async (req, res) => {
   const date = req.query.date || new Date().toISOString().slice(0, 10);
-  const result = await query('SELECT * FROM meals WHERE clerk_user_id=$1 AND logged_at BETWEEN $2 AND $3 ORDER BY logged_at DESC', [req.userId, ...dayBounds(date)]);
+  const timeZone = getTimeZone(req.query.tz);
+  const result = await query(`SELECT * FROM meals WHERE clerk_user_id=$1 AND ${dayRangeSql()} ORDER BY logged_at DESC`, [req.userId, date, timeZone]);
   res.json(result.rows);
 });
 

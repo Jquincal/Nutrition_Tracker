@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "node --watch server.js",
     "start": "node server.js",
-    "db:init": "node db/init.js"
+    "db:init": "node db/init.js",
+    "test": "node --test"
   },
   "dependencies": {
     "@clerk/express": "^2.1.23",

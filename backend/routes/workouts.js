@@ -3,11 +3,13 @@ import { query } from '../db/database.js';
 import { calculateCalories } from '../services/calculatorService.js';
 import { validate } from '../middleware/validate.js';
 import { workoutSchema } from '../schemas.js';
+import { dayRangeSql, getTimeZone } from '../utils/date.js';
 
 const router = Router();
 router.get('/', async (req, res) => {
   const date = req.query.date || new Date().toISOString().slice(0, 10);
-  const result = await query('SELECT * FROM workouts WHERE clerk_user_id=$1 AND logged_at::date=$2::date ORDER BY logged_at DESC', [req.userId, date]);
+  const timeZone = getTimeZone(req.query.tz);
+  const result = await query(`SELECT * FROM workouts WHERE clerk_user_id=$1 AND ${dayRangeSql()} ORDER BY logged_at DESC`, [req.userId, date, timeZone]);
   res.json(result.rows);
 });
 router.post('/', validate(workoutSchema), async (req, res) => {

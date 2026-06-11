@@ -11,5 +11,5 @@ test('renders app without crashing', () => {
       <App demo={true} />
     </QueryClientProvider>
   )
-  expect(screen.getByText(/NutriFlow/i)).toBeDefined()
+  expect(screen.getAllByText(/NutriFlow/i)).not.toHaveLength(0)
 })

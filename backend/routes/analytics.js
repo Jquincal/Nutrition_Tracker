@@ -1,24 +1,35 @@
 import { Router } from 'express';
 import { query } from '../db/database.js';
+import { dayRangeSql, getTimeZone } from '../utils/date.js';
 
 const router = Router();
 
 router.get('/today', async (req, res) => {
   const date = req.query.date || new Date().toISOString().slice(0, 10);
+  const timeZone = getTimeZone(req.query.tz);
   const [user, meals, workouts] = await Promise.all([
     query('SELECT * FROM users WHERE clerk_user_id=$1', [req.userId]),
-    query(`SELECT COALESCE(SUM(protein),0) protein, COALESCE(SUM(calories),0) calories, COALESCE(SUM(carbs),0) carbs, COALESCE(SUM(fats),0) fats FROM meals WHERE clerk_user_id=$1 AND logged_at::date=$2::date`, [req.userId, date]),
-    query(`SELECT COALESCE(SUM(calories_burned),0) calories_burned, COUNT(*) workouts FROM workouts WHERE clerk_user_id=$1 AND logged_at::date=$2::date`, [req.userId, date]),
+    query(`SELECT COALESCE(SUM(protein),0) protein, COALESCE(SUM(calories),0) calories, COALESCE(SUM(carbs),0) carbs, COALESCE(SUM(fats),0) fats FROM meals WHERE clerk_user_id=$1 AND ${dayRangeSql()}`, [req.userId, date, timeZone]),
+    query(`SELECT COALESCE(SUM(calories_burned),0) calories_burned, COUNT(*) workouts FROM workouts WHERE clerk_user_id=$1 AND ${dayRangeSql()}`, [req.userId, date, timeZone]),
   ]);
   res.json({ date, goals: user.rows[0] || {}, totals: meals.rows[0], activity: workouts.rows[0] });
 });
 
 router.get('/week', async (req, res) => {
+  const timeZone = getTimeZone(req.query.tz);
   const result = await query(
-    `SELECT day::date date, COALESCE(SUM(m.protein),0) protein, COALESCE(SUM(m.calories),0) calories
-     FROM generate_series(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, INTERVAL '1 day') day
-     LEFT JOIN meals m ON m.clerk_user_id=$1 AND m.logged_at::date=day::date GROUP BY day ORDER BY day`,
-    [req.userId],
+    `WITH days AS (
+       SELECT generate_series(
+         (CURRENT_TIMESTAMP AT TIME ZONE $2)::date - INTERVAL '6 days',
+         (CURRENT_TIMESTAMP AT TIME ZONE $2)::date,
+         INTERVAL '1 day'
+       )::date day
+     )
+     SELECT day date, COALESCE(SUM(m.protein),0) protein, COALESCE(SUM(m.calories),0) calories
+     FROM days
+     LEFT JOIN meals m ON m.clerk_user_id=$1 AND (m.logged_at AT TIME ZONE $2)::date=day
+     GROUP BY day ORDER BY day`,
+    [req.userId, timeZone],
   );
   res.json(result.rows);
 });

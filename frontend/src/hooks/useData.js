@@ -2,19 +2,28 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { useApi } from '../api/client'
 
-export const today = () => new Date().toISOString().slice(0, 10)
+export const today = (date = new Date()) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+const dayQuery = (date) => new URLSearchParams({ date, tz: timeZone })
 
 export function useDay(date = today()) {
   const api = useApi()
-  const summary = useQuery({ queryKey: ['summary', date], queryFn: () => api(`/analytics/today?date=${date}`) })
-  const meals = useQuery({ queryKey: ['meals', date], queryFn: () => api(`/meals?date=${date}`) })
-  const workouts = useQuery({ queryKey: ['workouts', date], queryFn: () => api(`/workouts?date=${date}`) })
+  const params = dayQuery(date)
+  const summary = useQuery({ queryKey: ['summary', date, timeZone], queryFn: () => api(`/analytics/today?${params}`) })
+  const meals = useQuery({ queryKey: ['meals', date, timeZone], queryFn: () => api(`/meals?${params}`) })
+  const workouts = useQuery({ queryKey: ['workouts', date, timeZone], queryFn: () => api(`/workouts?${params}`) })
   return { summary, meals, workouts }
 }
 
 export function useWeek() {
   const api = useApi()
-  return useQuery({ queryKey: ['week'], queryFn: () => api('/analytics/week') })
+  return useQuery({ queryKey: ['week', timeZone], queryFn: () => api(`/analytics/week?${new URLSearchParams({ tz: timeZone })}`) })
 }
 
 export function useCreate(path, message, keys) {
