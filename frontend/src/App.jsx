@@ -27,6 +27,10 @@ function Shell({ demo = false, user = null }) {
 
   return <BrowserRouter>
     <div className="app-shell">
+      <header className="mobile-header">
+        <div className="brand"><span className="brand-mark"><Activity size={22} /></span><span><strong>NutriFlow</strong></span></div>
+        {!demo && <UserButton />}
+      </header>
       <aside className="sidebar">
         <div className="brand"><span className="brand-mark"><Activity size={22} /></span><span><strong>NutriFlow</strong><small>Nutrition tracker</small></span></div>
         <nav aria-label="Navegación principal">{nav.map(([to, label, Icon]) => <NavLink key={to} to={to} end={to === '/'}><Icon size={19} /><span>{label}</span></NavLink>)}</nav>
@@ -42,7 +46,7 @@ function Shell({ demo = false, user = null }) {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <nav className="bottom-nav" aria-label="Navegación móvil">{nav.slice(0, 4).map(([to, label, Icon]) => <NavLink key={to} to={to} end={to === '/'}><Icon size={21} /><span>{label}</span></NavLink>)}</nav>
+      <nav className="bottom-nav" aria-label="Navegación móvil">{nav.map(([to, label, Icon]) => <NavLink key={to} to={to} end={to === '/'}><Icon size={21} /><span>{label}</span></NavLink>)}</nav>
     </div>
   </BrowserRouter>
 }
