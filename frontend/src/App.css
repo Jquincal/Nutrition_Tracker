@@ -1,5 +1,5 @@
-:root { --green: #276b47; --ink: #18221c; --muted: #718077; --line: #e1e7e2; --paper: #fff; --bg: #f4f6f3; --bg-sidebar: #fbfcfa; --nav-hover: #e7f0e9; --accent: #234f39; --input-bg: #fff; }
-@media (prefers-color-scheme: dark) { :root { --green: #8dcba7; --ink: #e1e7e2; --muted: #9ab0a1; --line: #2d3b32; --paper: #18221c; --bg: #121915; --bg-sidebar: #151d18; --nav-hover: #1e2c24; --accent: #1e3b28; --input-bg: #18221c; } }
+:root { --green: #276b47; --ink: #18221c; --muted: #718077; --line: #e1e7e2; --paper: #fff; --bg: #f4f6f3; --bg-sidebar: #fbfcfa; --nav-hover: #e7f0e9; --accent: #234f39; --input-bg: #fff; --chart-protein: #2e7d50; --chart-calories: #e87d37; --chart-goal: #93a39a; }
+@media (prefers-color-scheme: dark) { :root { --green: #8dcba7; --ink: #e1e7e2; --muted: #9ab0a1; --line: #2d3b32; --paper: #18221c; --bg: #121915; --bg-sidebar: #151d18; --nav-hover: #1e2c24; --accent: #1e3b28; --input-bg: #18221c; --chart-protein: #8dcba7; --chart-calories: #f0a268; --chart-goal: #718077; } }
 .mobile-header { display: none; }
 .app-shell { min-height: 100vh; display: grid; grid-template-columns: 240px 1fr; }
 .sidebar { position: fixed; inset: 0 auto 0 0; width: 240px; padding: 26px 18px; background: var(--bg-sidebar); border-right: 1px solid var(--line); display: flex; flex-direction: column; z-index: 10; }

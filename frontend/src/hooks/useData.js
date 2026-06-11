@@ -23,7 +23,12 @@ export function useDay(date = today()) {
 
 export function useWeek() {
   const api = useApi()
-  return useQuery({ queryKey: ['week', timeZone], queryFn: () => api(`/analytics/week?${new URLSearchParams({ tz: timeZone })}`) })
+  return useQuery({
+    queryKey: ['week', timeZone],
+    queryFn: () => api(`/analytics/week?${new URLSearchParams({ tz: timeZone })}`),
+    staleTime: 0,
+    refetchOnMount: 'always',
+  })
 }
 
 export function useCreate(path, message, keys) {
