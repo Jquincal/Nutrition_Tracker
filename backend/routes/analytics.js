@@ -23,12 +23,12 @@ router.get('/week', async (req, res) => {
          (CURRENT_TIMESTAMP AT TIME ZONE $2)::date - INTERVAL '6 days',
          (CURRENT_TIMESTAMP AT TIME ZONE $2)::date,
          INTERVAL '1 day'
-       )::date day
+       )::date AS local_date
      )
-     SELECT day date, COALESCE(SUM(m.protein),0) protein, COALESCE(SUM(m.calories),0) calories
+     SELECT local_date AS date, COALESCE(SUM(m.protein),0) protein, COALESCE(SUM(m.calories),0) calories
      FROM days
-     LEFT JOIN meals m ON m.clerk_user_id=$1 AND (m.logged_at AT TIME ZONE $2)::date=day
-     GROUP BY day ORDER BY day`,
+     LEFT JOIN meals m ON m.clerk_user_id=$1 AND (m.logged_at AT TIME ZONE $2)::date=local_date
+     GROUP BY local_date ORDER BY local_date`,
     [req.userId, timeZone],
   );
   res.json(result.rows);

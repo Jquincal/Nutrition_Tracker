@@ -63,5 +63,5 @@ function ClerkApp() {
 }
 
 export default function App({ demo = false }) {
-  return <><Toaster position="top-right" />{demo ? <ApiProvider getToken={async () => null}><Shell demo /></ApiProvider> : <ClerkApp />}</>
+  return <><Toaster position="top-right" />{demo ? <ApiProvider getToken={async () => null} requireToken={false}><Shell demo /></ApiProvider> : <ClerkApp />}</>
 }
