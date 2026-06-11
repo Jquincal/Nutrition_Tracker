@@ -1,0 +1,34 @@
+import { Router } from 'express';
+import { query } from '../db/database.js';
+import { validate } from '../middleware/validate.js';
+import { userSyncSchema, userUpdateSchema } from '../schemas.js';
+
+const router = Router();
+
+router.post('/sync', validate(userSyncSchema), async (req, res) => {
+  const { email, name } = req.body;
+  const result = await query(
+    `INSERT INTO users (clerk_user_id, email, name) VALUES ($1, $2, $3)
+     ON CONFLICT (clerk_user_id) DO UPDATE SET email = EXCLUDED.email, name = EXCLUDED.name, updated_at = NOW()
+     RETURNING *`,
+    [req.userId, email || null, name || null],
+  );
+  res.json(result.rows[0]);
+});
+
+router.get('/me', async (req, res) => {
+  const result = await query('SELECT * FROM users WHERE clerk_user_id = $1', [req.userId]);
+  res.json(result.rows[0] || null);
+});
+
+router.put('/me', validate(userUpdateSchema), async (req, res) => {
+  const { protein_goal, calories_goal, carbs_goal, fats_goal, weight_kg } = req.body;
+  const result = await query(
+    `UPDATE users SET protein_goal=$2, calories_goal=$3, carbs_goal=$4, fats_goal=$5, weight_kg=$6, updated_at=NOW()
+     WHERE clerk_user_id=$1 RETURNING *`,
+    [req.userId, protein_goal, calories_goal, carbs_goal, fats_goal, weight_kg],
+  );
+  res.json(result.rows[0]);
+});
+
+export default router;
