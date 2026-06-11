@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { pool, query } from '../db/database.js';
+import { query } from '../db/database.js';
 import { searchFood } from '../services/nutritionService.js';
+import { createManualMeal } from '../services/manualMealService.js';
 import { validate } from '../middleware/validate.js';
 import { customFoodSchema, mealSchema } from '../schemas.js';
 import { dayRangeSql, getTimeZone } from '../utils/date.js';
@@ -36,28 +37,7 @@ router.post('/', validate(mealSchema), async (req, res) => {
 });
 
 router.post('/manual', validate(customFoodSchema), async (req, res) => {
-  const { name, protein, calories, carbs, fats, serving_size } = req.body;
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    const food = await client.query(
-      `INSERT INTO custom_foods (clerk_user_id,name,protein,calories,carbs,fats,serving_size)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [req.userId, name, protein, calories, carbs, fats, serving_size],
-    );
-    const meal = await client.query(
-      `INSERT INTO meals (clerk_user_id,food_name,quantity,unit,protein,calories,carbs,fats)
-       VALUES ($1,$2,$3,'g',$4,$5,$6,$7) RETURNING *`,
-      [req.userId, name, serving_size, protein, calories, carbs, fats],
-    );
-    await client.query('COMMIT');
-    res.status(201).json({ food: food.rows[0], meal: meal.rows[0] });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
+  res.status(201).json(await createManualMeal(req.userId, req.body));
 });
 
 router.put('/:id', validate(mealSchema.partial()), async (req, res) => {
