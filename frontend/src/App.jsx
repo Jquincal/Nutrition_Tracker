@@ -46,7 +46,10 @@ function Shell({ demo = false, user = null }) {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <nav className="bottom-nav" aria-label="Navegación móvil">{nav.map(([to, label, Icon]) => <NavLink key={to} to={to} end={to === '/'}><Icon size={21} /><span>{label}</span></NavLink>)}</nav>
+      <nav className="bottom-nav" aria-label="Navegación móvil">
+        {nav.map(([to, label, Icon]) => <NavLink key={to} to={to} end={to === '/'}><Icon size={21} /><span>{label}</span></NavLink>)}
+        <div className="bottom-account"><span className="mobile-account-button">{demo ? <span className="avatar">DL</span> : <UserButton />}</span><span>Cuenta</span></div>
+      </nav>
     </div>
   </BrowserRouter>
 }
