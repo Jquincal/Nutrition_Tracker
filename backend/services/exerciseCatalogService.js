@@ -58,17 +58,42 @@ const normalizeExerciseDb = (item) => ({
   providerData: item,
 });
 
+async function fetchExerciseDbCatalog(baseUrl, apiKey) {
+  const headers = apiKey
+    ? {
+        'X-RapidAPI-Key': apiKey,
+        'X-RapidAPI-Host': process.env.EXERCISEDB_HOST || new URL(baseUrl).host,
+      }
+    : undefined;
+  const exercises = [];
+  let after;
+
+  while (exercises.length < 250) {
+    const url = new URL(`${baseUrl}/exercises`);
+    url.searchParams.set('limit', String(Math.min(25, 250 - exercises.length)));
+    if (after) url.searchParams.set('after', after);
+
+    const data = await fetchJson(url, headers ? { headers } : undefined);
+    const page = Array.isArray(data) ? data : data.data || [];
+    exercises.push(...page);
+
+    const nextCursor = Array.isArray(data) ? null : data.meta?.nextCursor;
+    if (!page.length || !data.meta?.hasNextPage || !nextCursor || nextCursor === after) break;
+    after = nextCursor;
+  }
+
+  return exercises;
+}
+
 export async function loadCuratedCatalog() {
   const bundled = fallbackCatalog.map((item) => normalizeExerciseDb(item));
   const baseUrl = process.env.EXERCISEDB_BASE_URL?.replace(/\/$/, '');
   const apiKey = process.env.EXERCISEDB_API_KEY;
-  if (!baseUrl || !apiKey) return bundled;
+  if (!baseUrl) return bundled;
   try {
-    const host = process.env.EXERCISEDB_HOST || new URL(baseUrl).host;
-    const data = await fetchJson(`${baseUrl}/exercises?limit=250&offset=0`, {
-      headers: { 'X-RapidAPI-Key': apiKey, 'X-RapidAPI-Host': host },
-    });
-    const external = (Array.isArray(data) ? data : data.data || []).filter((item) => (item?.exerciseId || item?.id) && item?.name).map(normalizeExerciseDb);
+    const external = (await fetchExerciseDbCatalog(baseUrl, apiKey))
+      .filter((item) => (item?.exerciseId || item?.id) && item?.name)
+      .map(normalizeExerciseDb);
     const seen = new Set();
     return [...bundled, ...external].filter((exercise) => {
       const key = `${exercise.name.toLowerCase()}:${String(exercise.equipment || '').toLowerCase()}`;

@@ -51,14 +51,14 @@ GitHub workflow skips deployment.
    CLERK_PUBLISHABLE_KEY=...
    USDA_API_KEY=...
    FRONTEND_URL=https://<web-domain>
-   EXERCISEDB_BASE_URL=https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1
-   EXERCISEDB_HOST=edb-with-videos-and-images-by-ascendapi.p.rapidapi.com
-   EXERCISEDB_API_KEY=...
+   EXERCISEDB_BASE_URL=https://oss.exercisedb.dev/api/v1
    API_NINJAS_API_KEY=...
    ```
 
-   `API_NINJAS_API_KEY` is optional. ExerciseDB credentials are optional because
-   the seed has a bundled fallback catalog.
+   `API_NINJAS_API_KEY` is optional. The public ExerciseDB endpoint does not
+   require credentials. For a RapidAPI ExerciseDB plan, also configure
+   `EXERCISEDB_API_KEY` and `EXERCISEDB_HOST`. If ExerciseDB is unavailable, the
+   seed still uses the bundled fallback catalog.
 
 5. Set these variables on `web`:
 

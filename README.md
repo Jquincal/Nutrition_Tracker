@@ -37,8 +37,9 @@ y elimine `DEV_USER_ID`.
 ## Variables de producción
 
 Backend: `DATABASE_URL`, `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`,
-`USDA_API_KEY`, `EXERCISEDB_BASE_URL`, `EXERCISEDB_API_KEY`, `EXERCISEDB_HOST`,
-`API_NINJAS_API_KEY` (opcional), `FRONTEND_URL`, `NODE_ENV=production`.
+`USDA_API_KEY`, `EXERCISEDB_BASE_URL`, `FRONTEND_URL`, `NODE_ENV=production`.
+Use `https://oss.exercisedb.dev/api/v1` para ExerciseDB sin credenciales.
+`EXERCISEDB_API_KEY`, `EXERCISEDB_HOST` y `API_NINJAS_API_KEY` son opcionales.
 
 Frontend: `VITE_CLERK_PUBLISHABLE_KEY`, `VITE_API_URL`.
 
