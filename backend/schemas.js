@@ -18,7 +18,6 @@ export const workoutSetSchema = z.object({
   weight_kg: z.coerce.number().min(0).optional().nullable(),
   reps: z.coerce.number().int().min(0).optional().nullable(),
   duration_minutes: z.coerce.number().min(0).optional().nullable(),
-  calories_burned: z.coerce.number().min(0).optional(),
   set_order: z.coerce.number().int().positive().optional(),
   notes: z.string().optional().nullable(),
 });
@@ -59,4 +58,13 @@ export const userUpdateSchema = z.object({
 export const weightLogSchema = z.object({
   value_kg: z.coerce.number().positive(),
   logged_at: z.string().datetime().optional().nullable(),
+});
+
+export const exerciseSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  type: z.enum(['strength', 'cardio']).default('strength'),
+  body_part: z.string().trim().max(80).optional().nullable(),
+  target_muscle: z.string().trim().max(80).optional().nullable(),
+  equipment: z.string().trim().max(80).optional().nullable(),
+  instructions: z.array(z.string().trim().min(1).max(500)).max(12).optional().default([]),
 });

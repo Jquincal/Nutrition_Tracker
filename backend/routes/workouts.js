@@ -66,22 +66,22 @@ async function saveWorkout(req, res, workoutId = null) {
       id = created.rows[0].id;
     }
     for (const [index, set] of req.body.sets.entries()) {
-      let calories = set.calories_burned || 0;
-      if (!calories) {
-        const exercise = await client.query('SELECT name,type FROM exercises WHERE id=$1', [set.exercise_id]);
-        if (!exercise.rows[0]) {
-          const error = new Error('Exercise not found');
-          error.status = 400;
-          throw error;
-        }
-        calories = calculateCalories(
-          exercise.rows[0].name,
-          exercise.rows[0].type,
-          user.rows[0]?.weight_kg || 70,
-          set.duration_minutes,
-          set.reps ? 1 : 0,
-        );
+      const exercise = await client.query(
+        'SELECT name,type FROM exercises WHERE id=$1 AND (user_id IS NULL OR user_id=$2)',
+        [set.exercise_id, userId],
+      );
+      if (!exercise.rows[0]) {
+        const error = new Error('Exercise not found');
+        error.status = 400;
+        throw error;
       }
+      const calories = calculateCalories(
+        exercise.rows[0].name,
+        exercise.rows[0].type,
+        user.rows[0]?.weight_kg || 70,
+        set.duration_minutes,
+        1,
+      );
       await client.query(
         `INSERT INTO sets (workout_id,exercise_id,weight_kg,reps,duration_minutes,calories_burned,set_order,notes)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,

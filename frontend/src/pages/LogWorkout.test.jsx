@@ -26,5 +26,29 @@ test('saves multiple sets as one workout session', async () => {
 
   await waitFor(() => expect(fetch.mock.calls.some(([, options]) => options?.method === 'POST')).toBe(true))
   const post = fetch.mock.calls.find(([, options]) => options?.method === 'POST')
-  expect(JSON.parse(post[1].body).sets).toHaveLength(2)
+  const body = JSON.parse(post[1].body)
+  expect(body.sets).toHaveLength(2)
+  expect(body.sets[0]).not.toHaveProperty('calories_burned')
+  expect(screen.queryByText('kcal')).toBeNull()
+})
+
+test('creates a private manual exercise and adds it to the session', async () => {
+  const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url, options = {}) => ({
+    ok: true,
+    status: options.method === 'POST' ? 201 : 200,
+    json: async () => options.method === 'POST' && url.endsWith('/exercises')
+      ? { id: 8, name: 'Press especial', type: 'strength', provider: 'manual' }
+      : [],
+  }))
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+
+  render(<QueryClientProvider client={queryClient}><ApiProvider getToken={async () => null} requireToken={false}><LogWorkout /></ApiProvider></QueryClientProvider>)
+
+  fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Press especial' } })
+  fireEvent.change(screen.getByLabelText('Equipo o máquina'), { target: { value: 'Polea' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Crear y agregar a la sesión' }))
+
+  await screen.findByText('Press especial')
+  const post = fetch.mock.calls.find(([url, options]) => url.endsWith('/exercises') && options?.method === 'POST')
+  expect(JSON.parse(post[1].body)).toMatchObject({ name: 'Press especial', type: 'strength', equipment: 'Polea' })
 })
