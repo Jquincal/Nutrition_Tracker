@@ -1,7 +1,9 @@
 # Production deployment
 
-FitStack Pro uses three Railway services connected to this GitHub repository.
-The current production project is `fitstack-pro`:
+FitStack Pro uses Vercel for the primary frontend and Railway for the API and
+PostgreSQL. Railway also keeps a web service as a fallback deployment.
+
+The current Railway project is `fitstack-pro`:
 
 - `postgres`: Railway PostgreSQL.
 - `api`: Node/Express backend, rooted at `/backend`.
@@ -10,10 +12,14 @@ The current production project is `fitstack-pro`:
 Current Railway domains:
 
 - API: `https://nutritiontracker-production-8f4f.up.railway.app`
-- Web: `https://web-production-e7aa2.up.railway.app`
+- Web fallback: `https://web-production-e7aa2.up.railway.app`
 
-Both application services deploy automatically from the `main` branch. Railway
-`Wait for CI` is enabled for both, so a failed GitHub workflow skips deployment.
+Primary frontend domain:
+
+- Vercel: `https://nutritiontracker-gamma.vercel.app`
+
+Railway `Wait for CI` is enabled for its application services, so a failed
+GitHub workflow skips deployment.
 
 ## Railway setup
 
@@ -61,7 +67,28 @@ Both application services deploy automatically from the `main` branch. Railway
    VITE_API_URL=https://<api-domain>/api
    ```
 
-6. In Clerk, add the Railway web domain to allowed origins and redirect URLs.
+6. Set API `FRONTEND_URL` to the Vercel primary domain and any explicitly
+   supported fallback domains.
+
+## Vercel setup
+
+The Vercel project is `nutritiontracker`, rooted at `/frontend`.
+
+Production variables:
+
+```text
+VITE_API_URL=https://nutritiontracker-production-8f4f.up.railway.app/api
+VITE_CLERK_PUBLISHABLE_KEY=...
+```
+
+Its stable production alias is `https://nutritiontracker-gamma.vercel.app`.
+The Vercel GitHub app must have access to `Jquincal/Nutrition_Tracker` before
+Vercel can enable automatic Git deployments. Manual production deploys work
+with `vercel --prod` from the repository root.
+
+Clerk currently uses a development instance. A Clerk production domain requires
+creating a production instance with `clerk deploy` and selecting a custom domain;
+do not repurpose another site's domain without explicit approval.
 
 ## Release behavior
 
