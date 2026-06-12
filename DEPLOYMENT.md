@@ -1,10 +1,10 @@
 # Production deployment
 
 FitStack Pro uses three Railway services connected to this GitHub repository.
-The current production project is `brilliant-kindness`:
+The current production project is `fitstack-pro`:
 
 - `postgres`: Railway PostgreSQL.
-- `Nutrition_Tracker`: Node/Express backend, rooted at `/backend`.
+- `api`: Node/Express backend, rooted at `/backend`.
 - `web`: React/Vite frontend, rooted at `/frontend`.
 
 Current Railway domains:
@@ -12,8 +12,8 @@ Current Railway domains:
 - API: `https://nutritiontracker-production-8f4f.up.railway.app`
 - Web: `https://web-production-e7aa2.up.railway.app`
 
-Both application services deploy automatically from the `main` branch after
-GitHub CI passes.
+Both application services deploy automatically from the `main` branch. Railway
+`Wait for CI` is enabled for both, so a failed GitHub workflow skips deployment.
 
 ## Railway setup
 
