@@ -1,10 +1,16 @@
 # Production deployment
 
-FitStack Pro uses three Railway services connected to this GitHub repository:
+FitStack Pro uses three Railway services connected to this GitHub repository.
+The current production project is `brilliant-kindness`:
 
 - `postgres`: Railway PostgreSQL.
-- `api`: Node/Express backend, rooted at `/backend`.
+- `Nutrition_Tracker`: Node/Express backend, rooted at `/backend`.
 - `web`: React/Vite frontend, rooted at `/frontend`.
+
+Current Railway domains:
+
+- API: `https://nutritiontracker-production-8f4f.up.railway.app`
+- Web: `https://web-production-e7aa2.up.railway.app`
 
 Both application services deploy automatically from the `main` branch after
 GitHub CI passes.
