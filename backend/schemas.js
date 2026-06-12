@@ -13,16 +13,21 @@ export const mealSchema = z.object({
   logged_at: z.string().datetime().optional().nullable(),
 });
 
-export const workoutSchema = z.object({
-  exercise_type: z.enum(['cardio', 'fuerza']),
-  exercise_name: z.string().min(1),
-  duration_minutes: z.coerce.number().min(0).optional().default(0),
+export const workoutSetSchema = z.object({
+  exercise_id: z.coerce.number().int().positive(),
+  weight_kg: z.coerce.number().min(0).optional().nullable(),
+  reps: z.coerce.number().int().min(0).optional().nullable(),
+  duration_minutes: z.coerce.number().min(0).optional().nullable(),
   calories_burned: z.coerce.number().min(0).optional(),
-  sets: z.coerce.number().min(0).optional(),
-  reps: z.coerce.number().min(0).optional(),
-  weight: z.coerce.number().min(0).optional(),
+  set_order: z.coerce.number().int().positive().optional(),
+  notes: z.string().optional().nullable(),
+});
+
+export const workoutSchema = z.object({
+  name: z.string().min(1).default('Workout'),
   notes: z.string().optional().nullable(),
   logged_at: z.string().datetime().optional().nullable(),
+  sets: z.array(workoutSetSchema).min(1),
 });
 
 export const customFoodSchema = z.object({
@@ -45,5 +50,13 @@ export const userUpdateSchema = z.object({
   carbs_goal: z.coerce.number().min(0).optional(),
   fats_goal: z.coerce.number().min(0).optional(),
   weight_kg: z.coerce.number().positive().optional(),
+  sex: z.enum(['male', 'female']).optional().nullable(),
+  height_cm: z.coerce.number().positive().optional().nullable(),
+  age: z.coerce.number().int().min(13).max(120).optional().nullable(),
+  activity_level: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).optional().nullable(),
 });
 
+export const weightLogSchema = z.object({
+  value_kg: z.coerce.number().positive(),
+  logged_at: z.string().datetime().optional().nullable(),
+});

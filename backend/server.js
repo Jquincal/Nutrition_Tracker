@@ -8,6 +8,8 @@ import meals from './routes/meals.js';
 import customFoods from './routes/customFoods.js';
 import workouts from './routes/workouts.js';
 import analytics from './routes/analytics.js';
+import weightLogs from './routes/weightLogs.js';
+import exercises from './routes/exercises.js';
 
 const app = express();
 app.use(cors({ origin: process.env.FRONTEND_URL?.split(',') || true }));
@@ -25,6 +27,8 @@ app.use('/api/users', protect, users);
 app.use('/api/meals', protect, meals);
 app.use('/api/foods/custom', protect, customFoods);
 app.use('/api/workouts', protect, workouts);
+app.use('/api/weight-logs', protect, weightLogs);
+app.use('/api/exercises', protect, exercises);
 app.use('/api/analytics', protect, analytics);
 
 app.use((error, _req, res, _next) => {

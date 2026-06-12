@@ -8,9 +8,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'NutriFlow Nutrition Tracker',
-        short_name: 'NutriFlow',
-        description: 'Registro diario de nutrición y entrenamientos',
+        name: 'FitStack Pro',
+        short_name: 'FitStack',
+        description: 'Nutrición, peso y sesiones de entrenamiento',
         theme_color: '#276b47',
         background_color: '#f4f6f3',
         display: 'standalone',

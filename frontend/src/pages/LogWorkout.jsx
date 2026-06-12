@@ -1,10 +1,42 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Plus, Search, Trash2 } from 'lucide-react'
+import { useApi } from '../api/client'
 import { useCreate } from '../hooks/useData'
 import { PageTitle } from './LogMeal'
 
+const emptySet = (exercise) => ({ exercise_id: exercise.id, exercise_name: exercise.name, exercise_type: exercise.type, weight_kg: '', reps: '', duration_minutes: '', calories_burned: '' })
+
 export default function LogWorkout() {
-  const [type, setType] = useState('cardio'), [form, setForm] = useState({ exercise_name: 'Caminar', duration_minutes: 30, sets: 4, reps: 10, weight: 20, notes: '' })
-  const create = useCreate('/workouts', 'Entrenamiento guardado', ['workouts', 'summary'])
-  const field = (key, label, type = 'number') => <label>{label}<input type={type} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} /></label>
-  return <><PageTitle eyebrow="Registro de actividad" title="Sumá tu entrenamiento." text="Calculamos calorías aproximadas según tu peso y la duración o volumen." /><article className="panel form-panel"><div className="segmented"><button className={type === 'cardio' ? 'active' : ''} onClick={() => setType('cardio')}>Cardio</button><button className={type === 'fuerza' ? 'active' : ''} onClick={() => setType('fuerza')}>Fuerza</button></div><div className="form-grid">{field('exercise_name', 'Ejercicio', 'text')}{field('duration_minutes', 'Duración (min)')}{type === 'fuerza' && <>{field('sets', 'Series')}{field('reps', 'Repeticiones')}{field('weight', 'Peso (kg)')}</>}{field('notes', 'Notas', 'text')}</div><button className="primary full" onClick={() => create.mutate({ ...form, exercise_type: type })}>Guardar entrenamiento</button></article></>
+  const api = useApi()
+  const [search, setSearch] = useState(''), [muscle, setMuscle] = useState(''), [equipment, setEquipment] = useState('')
+  const [form, setForm] = useState({ name: 'Entrenamiento', notes: '', sets: [] })
+  const params = useMemo(() => new URLSearchParams({ search, muscle, equipment }), [search, muscle, equipment])
+  const exercises = useQuery({ queryKey: ['exercises', search, muscle, equipment], queryFn: () => api(`/exercises?${params}`) })
+  const create = useCreate('/workouts', 'Sesión guardada', ['workouts', 'summary'])
+  const updateSet = (index, key, value) => setForm((current) => ({ ...current, sets: current.sets.map((set, i) => i === index ? { ...set, [key]: value } : set) }))
+  const addExercise = (exercise) => setForm((current) => ({ ...current, sets: [...current.sets, emptySet(exercise)] }))
+  const addAnother = (index) => setForm((current) => ({ ...current, sets: [...current.sets.slice(0, index + 1), { ...current.sets[index] }, ...current.sets.slice(index + 1)] }))
+  const remove = (index) => setForm((current) => ({ ...current, sets: current.sets.filter((_, i) => i !== index) }))
+  const submit = () => create.mutate({ ...form, sets: form.sets.map((set, index) => ({
+    exercise_id: set.exercise_id,
+    weight_kg: set.weight_kg,
+    reps: set.reps,
+    duration_minutes: set.duration_minutes,
+    calories_burned: set.calories_burned,
+    set_order: index + 1,
+  })) })
+
+  return <><PageTitle eyebrow="Diario de entrenamiento" title="Armá una sesión completa." text="Buscá ejercicios y registrá series de fuerza o bloques de cardio." />
+    <section className="workout-builder">
+      <article className="panel exercise-browser"><div className="search"><Search size={17} /><input aria-label="Buscar ejercicios" placeholder="Buscar ejercicio..." value={search} onChange={(e) => setSearch(e.target.value)} /></div><div className="filter-row"><input aria-label="Filtrar por músculo" placeholder="Músculo" value={muscle} onChange={(e) => setMuscle(e.target.value)} /><input aria-label="Filtrar por equipo" placeholder="Equipo" value={equipment} onChange={(e) => setEquipment(e.target.value)} /></div>
+        <div className="exercise-results">{exercises.data?.map((exercise) => <div className="exercise-result" key={exercise.id}><button onClick={() => addExercise(exercise)}><span><strong>{exercise.name}</strong><small>{exercise.target_muscle || exercise.body_part} · {exercise.equipment || 'no equipment'}</small></span><Plus size={17} /></button>{(exercise.instructions?.length > 0 || exercise.gif_url) && <details><summary>Instructions & demo</summary>{exercise.gif_url && <img src={exercise.gif_url} alt={`Demonstration of ${exercise.name}`} loading="lazy" />}{exercise.instructions?.map((instruction, index) => <p key={index}>{index + 1}. {instruction}</p>)}</details>}</div>)}</div>
+      </article>
+      <article className="panel session-panel"><div className="form-grid compact"><label>Nombre de sesión<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label><label>Notas<input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></label></div>
+        {!form.sets.length && <div className="empty-session">Agregá un ejercicio para comenzar.</div>}
+        <div className="set-list">{form.sets.map((set, index) => <div className="set-row" key={`${set.exercise_id}-${index}`}><div className="set-heading"><span><strong>{set.exercise_name}</strong><small>Serie {index + 1} · {set.exercise_type}</small></span><div><button aria-label="Duplicar serie" onClick={() => addAnother(index)}><Plus size={16} /></button><button aria-label="Eliminar serie" onClick={() => remove(index)}><Trash2 size={16} /></button></div></div><div className="set-fields">{set.exercise_type === 'cardio' ? <label>Minutos<input type="number" value={set.duration_minutes} onChange={(e) => updateSet(index, 'duration_minutes', e.target.value)} /></label> : <><label>kg<input type="number" value={set.weight_kg} onChange={(e) => updateSet(index, 'weight_kg', e.target.value)} /></label><label>Reps<input type="number" value={set.reps} onChange={(e) => updateSet(index, 'reps', e.target.value)} /></label></>}<label>kcal<input type="number" value={set.calories_burned} onChange={(e) => updateSet(index, 'calories_burned', e.target.value)} /></label></div></div>)}</div>
+        <button className="primary full" disabled={!form.sets.length || create.isPending} onClick={submit}>{create.isPending ? 'Guardando...' : 'Guardar sesión'}</button>
+      </article>
+    </section>
+  </>
 }

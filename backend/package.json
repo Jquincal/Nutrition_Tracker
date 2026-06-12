@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "node --watch server.js",
     "start": "node server.js",
-    "db:init": "node db/init.js",
+    "db:init": "node db/migrate.js",
+    "db:migrate": "node db/migrate.js",
+    "db:seed:exercises": "node db/seedExercises.js",
     "test": "node --test"
   },
   "dependencies": {

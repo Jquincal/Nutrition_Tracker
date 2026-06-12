@@ -1,12 +1,12 @@
-# Nutrition Tracker
+# FitStack Pro
 
-Aplicación full-stack para registrar comidas, macros y entrenamientos.
+Aplicación full-stack para registrar comidas, macros, peso y sesiones de entrenamiento.
 
 ## Stack
 
 - React + Vite + TanStack Query + Clerk
 - Node.js + Express + PostgreSQL
-- USDA FoodData Central
+- USDA FoodData Central + catálogo curado ExerciseDB
 - PWA instalable con actualizaciones automáticas
 
 ## Desarrollo local
@@ -14,12 +14,13 @@ Aplicación full-stack para registrar comidas, macros y entrenamientos.
 1. Crear una base PostgreSQL llamada `nutrition_tracker`.
 2. Copiar `backend/.env.example` a `backend/.env` y ajustar `DATABASE_URL`.
 3. Copiar `frontend/.env.example` a `frontend/.env`.
-4. Inicializar y arrancar:
+4. Aplicar migraciones, cargar el catálogo y arrancar:
 
 ```bash
 cd backend
 npm install
-npm run db:init
+npm run db:migrate
+npm run db:seed:exercises
 npm run dev
 ```
 
@@ -36,10 +37,16 @@ y elimine `DEV_USER_ID`.
 ## Variables de producción
 
 Backend: `DATABASE_URL`, `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`,
-`USDA_API_KEY`, `FRONTEND_URL`, `NODE_ENV=production`.
+`USDA_API_KEY`, `EXERCISEDB_BASE_URL`, `EXERCISEDB_API_KEY`, `EXERCISEDB_HOST`,
+`API_NINJAS_API_KEY` (opcional), `FRONTEND_URL`, `NODE_ENV=production`.
 
 Frontend: `VITE_CLERK_PUBLISHABLE_KEY`, `VITE_API_URL`.
 
 Para Vercel, configure el directorio raíz como `frontend`. Para Railway, configure
-el directorio raíz como `backend` y ejecute `npm run db:init` antes del primer
-arranque.
+el directorio raíz como `backend` y ejecute `npm run db:migrate` y
+`npm run db:seed:exercises` durante el despliegue. Antes de migrar una base
+existente, realice un backup: se conservan usuarios y nutrición, pero se elimina
+el historial del esquema anterior de entrenamientos.
+
+La configuración completa de Railway, GitHub Actions y variables de producción
+está documentada en [DEPLOYMENT.md](./DEPLOYMENT.md).

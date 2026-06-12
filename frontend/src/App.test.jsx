@@ -11,7 +11,7 @@ test('renders app without crashing', () => {
       <App demo={true} />
     </QueryClientProvider>
   )
-  expect(screen.getAllByText(/NutriFlow/i)).not.toHaveLength(0)
+  expect(screen.getAllByText(/FitStack Pro/i)).not.toHaveLength(0)
   const mobileNav = screen.getByRole('navigation', { name: 'Navegación móvil' })
   expect(within(mobileNav).getByText('Ajustes')).toBeDefined()
   expect(within(mobileNav).getByText('Cuenta')).toBeDefined()

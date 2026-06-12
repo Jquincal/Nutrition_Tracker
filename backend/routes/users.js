@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { query } from '../db/database.js';
 import { validate } from '../middleware/validate.js';
 import { userSyncSchema, userUpdateSchema } from '../schemas.js';
+import { calculateTdee } from '../services/tdeeService.js';
 
 const router = Router();
 
@@ -22,11 +23,33 @@ router.get('/me', async (req, res) => {
 });
 
 router.put('/me', validate(userUpdateSchema), async (req, res) => {
-  const { protein_goal, calories_goal, carbs_goal, fats_goal, weight_kg } = req.body;
+  const current = await query('SELECT * FROM users WHERE clerk_user_id=$1', [req.userId]);
+  if (!current.rows[0]) return res.status(404).json({ error: 'User profile not found' });
+  const profile = { ...current.rows[0], ...req.body };
+  const tdee = calculateTdee({
+    sex: profile.sex,
+    weightKg: profile.weight_kg,
+    heightCm: profile.height_cm,
+    age: profile.age,
+    activityLevel: profile.activity_level,
+  });
   const result = await query(
-    `UPDATE users SET protein_goal=$2, calories_goal=$3, carbs_goal=$4, fats_goal=$5, weight_kg=$6, updated_at=NOW()
+    `UPDATE users SET protein_goal=$2, calories_goal=$3, carbs_goal=$4, fats_goal=$5, weight_kg=$6,
+       sex=$7, height_cm=$8, age=$9, activity_level=$10, tdee_goal=$11, updated_at=NOW()
      WHERE clerk_user_id=$1 RETURNING *`,
-    [req.userId, protein_goal, calories_goal, carbs_goal, fats_goal, weight_kg],
+    [
+      req.userId,
+      profile.protein_goal,
+      tdee ?? profile.calories_goal,
+      profile.carbs_goal,
+      profile.fats_goal,
+      profile.weight_kg,
+      profile.sex,
+      profile.height_cm,
+      profile.age,
+      profile.activity_level,
+      tdee,
+    ],
   );
   res.json(result.rows[0]);
 });

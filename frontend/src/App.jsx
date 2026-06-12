@@ -28,11 +28,11 @@ function Shell({ demo = false, user = null }) {
   return <BrowserRouter>
     <div className="app-shell">
       <header className="mobile-header">
-        <div className="brand"><span className="brand-mark"><Activity size={22} /></span><span><strong>NutriFlow</strong></span></div>
+        <div className="brand"><span className="brand-mark"><Activity size={22} /></span><span><strong>FitStack Pro</strong></span></div>
         {!demo && <UserButton />}
       </header>
       <aside className="sidebar">
-        <div className="brand"><span className="brand-mark"><Activity size={22} /></span><span><strong>NutriFlow</strong><small>Nutrition tracker</small></span></div>
+        <div className="brand"><span className="brand-mark"><Activity size={22} /></span><span><strong>FitStack Pro</strong><small>Nutrition & training</small></span></div>
         <nav aria-label="Navegación principal">{nav.map(([to, label, Icon]) => <NavLink key={to} to={to} end={to === '/'}><Icon size={19} /><span>{label}</span></NavLink>)}</nav>
         <div className="profile">{demo ? <><span className="avatar">DL</span><span><strong>Demo local</strong><small>Sin Clerk</small></span></> : <><UserButton /><span><strong>{user?.firstName || 'Mi cuenta'}</strong><small>{user?.primaryEmailAddress?.emailAddress}</small></span></>}</div>
       </aside>
