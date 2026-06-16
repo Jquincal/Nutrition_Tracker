@@ -3,7 +3,7 @@ import { pool, query } from '../db/database.js';
 import { validate } from '../middleware/validate.js';
 import { workoutInputSchema } from '../schemas.js';
 import { getUserId } from '../services/userService.js';
-import { calculateCalories } from '../services/calculatorService.js';
+import { calculateCalories, getEffectiveMinutes } from '../services/calculatorService.js';
 import { dayRangeSql, getTimeZone } from '../utils/date.js';
 
 const router = Router();
@@ -126,17 +126,18 @@ async function saveWorkout(req, res, workoutId = null) {
         error.status = 400;
         throw error;
       }
+      const durationMinutes = getEffectiveMinutes(exercise.rows[0].type, set.duration_minutes, 1);
       const calories = set.calories_burned || calculateCalories(
         exercise.rows[0].name,
         exercise.rows[0].type,
         user.rows[0]?.weight_kg || 70,
-        set.duration_minutes,
+        durationMinutes,
         1,
       );
       await client.query(
         `INSERT INTO sets (workout_id,exercise_id,weight_kg,reps,duration_minutes,calories_burned,set_order,notes)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [id, set.exercise_id, set.weight_kg ?? null, set.reps ?? null, set.duration_minutes ?? null, calories, set.set_order || index + 1, set.notes || null],
+        [id, set.exercise_id, set.weight_kg ?? null, set.reps ?? null, durationMinutes, calories, set.set_order || index + 1, set.notes || null],
       );
     }
     await client.query('COMMIT');
