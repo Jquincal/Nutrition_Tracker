@@ -29,6 +29,20 @@ export const workoutSchema = z.object({
   sets: z.array(workoutSetSchema).min(1),
 });
 
+export const legacyWorkoutSchema = z.object({
+  exercise_name: z.string().trim().min(1),
+  exercise_type: z.enum(['cardio', 'strength', 'fuerza']).default('cardio'),
+  duration_minutes: z.coerce.number().min(0).optional().nullable(),
+  calories_burned: z.coerce.number().min(0).optional().nullable(),
+  sets: z.coerce.number().int().min(0).optional().nullable(),
+  reps: z.coerce.number().int().min(0).optional().nullable(),
+  weight: z.coerce.number().min(0).optional().nullable(),
+  notes: z.string().optional().nullable(),
+  logged_at: z.string().datetime().optional().nullable(),
+});
+
+export const workoutInputSchema = z.union([workoutSchema, legacyWorkoutSchema]);
+
 export const customFoodSchema = z.object({
   name: z.string().min(1),
   protein: z.coerce.number().min(0).default(0),

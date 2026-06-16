@@ -1,22 +1,32 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useApi } from '../api/client'
-import { useCreate } from '../hooks/useData'
 import { PageTitle } from './LogMeal'
 
 const emptySet = (exercise) => ({ exercise_id: exercise.id, exercise_name: exercise.name, exercise_type: exercise.type, weight_kg: '', reps: '', duration_minutes: '' })
 const emptyManual = { name: '', type: 'strength', target_muscle: '', body_part: '', equipment: '', instructions: [] }
 
 export default function LogWorkout() {
-  const api = useApi(), qc = useQueryClient()
+  const api = useApi(), qc = useQueryClient(), navigate = useNavigate()
   const [search, setSearch] = useState(''), [muscle, setMuscle] = useState(''), [equipment, setEquipment] = useState('')
   const [form, setForm] = useState({ name: 'Entrenamiento', notes: '', sets: [] })
   const [manual, setManual] = useState(emptyManual)
   const params = useMemo(() => new URLSearchParams({ search, muscle, equipment }), [search, muscle, equipment])
   const exercises = useQuery({ queryKey: ['exercises', search, muscle, equipment], queryFn: () => api(`/exercises?${params}`) })
-  const create = useCreate('/workouts', 'Sesión guardada', ['workouts', 'summary'])
+  const create = useMutation({
+    mutationFn: (body) => api('/workouts', { method: 'POST', body: JSON.stringify(body) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['workouts'], refetchType: 'all' })
+      qc.invalidateQueries({ queryKey: ['summary'], refetchType: 'all' })
+      setForm({ name: 'Entrenamiento', notes: '', sets: [] })
+      toast.success('Sesión guardada')
+      navigate('/')
+    },
+    onError: (error) => toast.error(error.message),
+  })
   const createManual = useMutation({
     mutationFn: () => api('/exercises', { method: 'POST', body: JSON.stringify(manual) }),
     onSuccess: (exercise) => {

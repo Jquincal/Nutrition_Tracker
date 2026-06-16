@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { ApiProvider } from '../api/client'
 import LogWorkout from './LogWorkout'
 
@@ -18,7 +19,9 @@ test('saves multiple sets as one workout session', async () => {
   }))
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
-  render(<QueryClientProvider client={queryClient}><ApiProvider getToken={async () => null} requireToken={false}><LogWorkout /></ApiProvider></QueryClientProvider>)
+  const invalidate = vi.spyOn(queryClient, 'invalidateQueries')
+
+  render(<MemoryRouter initialEntries={['/workout']}><QueryClientProvider client={queryClient}><ApiProvider getToken={async () => null} requireToken={false}><LogWorkout /></ApiProvider></QueryClientProvider></MemoryRouter>)
 
   fireEvent.click(await screen.findByRole('button', { name: /Push-up/i }))
   fireEvent.click(screen.getByRole('button', { name: 'Duplicar serie' }))
@@ -30,6 +33,8 @@ test('saves multiple sets as one workout session', async () => {
   expect(body.sets).toHaveLength(2)
   expect(body.sets[0]).not.toHaveProperty('calories_burned')
   expect(screen.queryByText('kcal')).toBeNull()
+  await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['workouts'], refetchType: 'all' }))
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['summary'], refetchType: 'all' })
 })
 
 test('creates a private manual exercise and adds it to the session', async () => {
@@ -42,7 +47,7 @@ test('creates a private manual exercise and adds it to the session', async () =>
   }))
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
-  render(<QueryClientProvider client={queryClient}><ApiProvider getToken={async () => null} requireToken={false}><LogWorkout /></ApiProvider></QueryClientProvider>)
+  render(<MemoryRouter><QueryClientProvider client={queryClient}><ApiProvider getToken={async () => null} requireToken={false}><LogWorkout /></ApiProvider></QueryClientProvider></MemoryRouter>)
 
   fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Press especial' } })
   fireEvent.change(screen.getByLabelText('Equipo o máquina'), { target: { value: 'Polea' } })
